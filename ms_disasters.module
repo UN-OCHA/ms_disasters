@@ -1,0 +1,75 @@
+<?php
+/**
+ * @file
+ * ms_disasters.module file
+ */
+
+/**
+ * Implements hook_cron()
+ * Synchronizes and fetches disasters from https://api.reliefweb.int/v1/disasters on cron
+ */
+function ms_disasters_cron() {
+  ms_disasters_fetch_and_sync();
+}
+
+/**
+ * Fetch and sync disasters from https://api.reliefweb.int/v1/disasters.
+ */
+function ms_disasters_fetch_and_sync() {
+  $endpoint = 'https://api.reliefweb.int/v1/disasters';
+  $offset = 0;
+
+  while(TRUE) {
+    $params = array(
+      'appname' => 'microservice',
+      'preset' => 'external',
+      'offset' => $offset,
+      'limit' => 200,
+      'fields[include][]' => 'glide'
+    );
+
+    $url = $endpoint . '?' . drupal_http_build_query($params);
+    $request = drupal_http_request($url);
+    if (isset($request->data)) {
+      $data = drupal_json_decode($request->data);
+      if (empty($data['data'])) {
+        return;
+      }
+      foreach ($data['data'] as $item) {
+        if (isset($item['fields']['name']) && $item['fields']['name'] && isset($item['fields']['glide']) && $item['fields']['glide']) {
+          $query = new EntityFieldQuery();
+          $query->entityCondition('entity_type', 'taxonomy_term');
+          $query->entityCondition('bundle', 'ms_disaster', '=');
+          $query->fieldCondition('field_ms_glide', 'value', $item['fields']['glide'], '=');
+          $result = $query->execute();
+
+          $term = new stdClass();
+          if (!isset($result['taxonomy_term'])) {
+            $vocabularies = taxonomy_vocabulary_get_names();
+            $term = (object) array(
+              'vid' => $vocabularies['ms_disaster']->vid,
+              'name' => $item['fields']['name'],
+              'vocabulary_machine_name' => 'ms_disaster'
+            );
+          }
+          else {
+            $tid = array_pop($result['taxonomy_term']);
+            $term = taxonomy_term_load($tid->tid);
+          }
+
+          $term->name = $item['fields']['name'];
+          $term->name_field['en'][0]['value'] = $item['fields']['name'];
+          $term->field_ms_rw_id[LANGUAGE_NONE][0]['value'] = $item['id'];
+          $term->field_ms_glide[LANGUAGE_NONE][0]['value'] = $item['fields']['glide'];
+
+          taxonomy_term_save($term);
+        }
+      }
+    }
+    else {
+      break;
+    }
+    $offset += 200;
+  }
+}
+
