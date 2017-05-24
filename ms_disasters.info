@@ -1,12 +1,14 @@
 name = Disasters
 core = 7.x
 package = Microservice
+dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = ms_core
 dependencies[] = number
 dependencies[] = taxonomy
 dependencies[] = text
 features[features_api][] = api:2
+features[field_base][] = field_ms_disasters
 features[field_base][] = field_ms_glide
 features[field_instance][] = taxonomy_term-ms_disaster-field_ms_glide
 features[field_instance][] = taxonomy_term-ms_disaster-field_ms_rw_id
