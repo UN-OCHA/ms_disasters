@@ -15,7 +15,7 @@ function ms_disasters_cron() {
 }
 
 /**
- * Fetch and sync disasters
+ * Fetch and sync disasters.
  *
  * Fetch and sync disasters from
  * https://api.reliefweb.int/v1/disasters.
