@@ -5,27 +5,32 @@
  */
 
 /**
- * Implements hook_cron()
- * Synchronizes and fetches disasters from https://api.reliefweb.int/v1/disasters on cron
+ * Implements hook_cron().
+ *
+ * Synchronizes and fetches disasters from
+ * https://api.reliefweb.int/v1/disasters on cron
  */
 function ms_disasters_cron() {
   ms_disasters_fetch_and_sync();
 }
 
 /**
- * Fetch and sync disasters from https://api.reliefweb.int/v1/disasters.
+ * Fetch and sync disasters
+ *
+ * Fetch and sync disasters from
+ * https://api.reliefweb.int/v1/disasters.
  */
 function ms_disasters_fetch_and_sync() {
   $endpoint = 'https://api.reliefweb.int/v1/disasters';
   $offset = 0;
 
-  while(TRUE) {
+  while (TRUE) {
     $params = array(
       'appname' => 'microservice',
       'preset' => 'external',
       'offset' => $offset,
       'limit' => 200,
-      'fields[include][]' => 'glide'
+      'fields[include][]' => 'glide',
     );
 
     $url = $endpoint . '?' . drupal_http_build_query($params);
@@ -49,7 +54,7 @@ function ms_disasters_fetch_and_sync() {
             $term = (object) array(
               'vid' => $vocabularies['ms_disaster']->vid,
               'name' => $item['fields']['name'],
-              'vocabulary_machine_name' => 'ms_disaster'
+              'vocabulary_machine_name' => 'ms_disaster',
             );
           }
           else {
@@ -72,4 +77,3 @@ function ms_disasters_fetch_and_sync() {
     $offset += 200;
   }
 }
-
