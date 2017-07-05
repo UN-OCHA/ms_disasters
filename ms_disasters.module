@@ -11,7 +11,12 @@
  * https://api.reliefweb.int/v1/disasters on cron
  */
 function ms_disasters_cron() {
-  ms_disasters_fetch_and_sync();
+  $last_pull = variable_get('ms_disasters_last_pull', 0);
+  $now = time();
+  if ($now - $last_pull > 24 * 3600) {
+    ms_disasters_fetch_and_sync();
+    variable_set('ms_disasters_last_pull', $now);
+  }
 }
 
 /**
