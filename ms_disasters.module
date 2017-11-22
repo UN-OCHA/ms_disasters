@@ -39,6 +39,7 @@ function ms_disasters_fetch_and_sync() {
     );
 
     $url = $endpoint . '?' . drupal_http_build_query($params);
+    watchdog('ms_disasters', 'Fetching ' . $url);
     $request = drupal_http_request($url);
     if (isset($request->data)) {
       $data = drupal_json_decode($request->data);
